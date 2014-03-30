@@ -406,27 +406,39 @@ class CommandInterface(object):
 
         return 1
 
+    def check_backdoor(self, chip_size, data):
+    # Boot loader enable bit check
+        backdoor = True #backdoor open
+        if chip_size == 0x01: #128KB
+            if not ((data[131031] & (1 << 4)) >> 4): #check the boot loader enable bit
+                backdoor = False #backdoor closed
+        elif chip_size == 0x02: #256KB
+            if not ((data[262103] & (1 << 4)) >> 4): #check the boot loader enable bit
+                backdoor = False #backdoor closed
+        elif chip_size == 0x04: #512KB
+            if not ((data[524247] & (1 << 4)) >> 4): #check the boot loader enable bit
+                backdoor = False #backdoor closed
+        return backdoor
+
 
     def writeMemory(self, addr, data):
         lng = len(data)
         trsf_size = 248 #amount of data bytes transferred per packet (theory: max 252 + 3)
         empty_packet = [255]*trsf_size #empty packet (filled with 0xFF)
 
-        # Boot loader enable check
-        # TODO: implement check for all chip sizes & take into account partial firmware uploads
-        if (lng == 524288): #check if file is for 512K model
-            if not ((data[524247] & (1 << 4)) >> 4): #check the boot loader enable bit  (only for 512K model)
-                if not query_yes_no("The boot loader backdoor is not enabled "\
-                    "in the firmware you are about to write to the target. "\
-                    "You will NOT be able to reprogram the target using this tool if you continue! "\
-                    "Do you want to continue?","no"):
-                    raise Exception('Aborted by user.')
+        if not self.check_backdoor(self.flash_size, data):
+            #backdoor closed
+            if not query_yes_no("The boot loader backdoor is not enabled "\
+                "in the firmware you are about to write to the target. "\
+                "You will NOT be able to reprogram the target using this tool if you continue! "\
+                "Do you want to continue?","no"):
+                raise Exception('Aborted by user.')
 
         mdebug(5, "Writing %(lng)d bytes starting at address 0x%(addr)X" %
                { 'lng': lng, 'addr': addr})
 
         if usepbar:
-            widgets = ['Writing: ', Percentage(),' ', ETA(), ' ', Bar()]
+            widgets = ['Writing: ', Percentage(), ' ', ETA(), ' ', Bar()]
             pbar = ProgressBar(widgets=widgets, maxval=lng, term_width=79).start()
 
         offs = 0
