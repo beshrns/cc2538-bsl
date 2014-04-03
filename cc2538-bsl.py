@@ -83,8 +83,12 @@ COMMAND_RET_FLASH_FAIL = 0x44
 
 ADDR_IEEE_ADDRESS_SECONDARY = 0x0027ffcc
 FLASH_CTRL_DIECFG0  = 0x400D3014
-FLASH_SIZE_MASK     = 0x70
-SRAM_SIZE_MASK      = 0x380
+FLASH_CTRL_DIECFG2  = 0x400D301C
+
+FLASH_SIZE_MASK         = 0x70
+SRAM_SIZE_MASK          = 0x380
+DIE_MAJOR_REVISION_MASK = 0xF0
+DIE_MINOR_REVISION_MASK = 0xF
 
 
 class CmdException(Exception):
@@ -386,21 +390,26 @@ class CommandInterface(object):
 
 # Complex commands section
     def getChipModel(self):
-        model = self.cmdMemRead(FLASH_CTRL_DIECFG0); #returns 4 bytes
+        model = self.cmdMemRead(FLASH_CTRL_DIECFG0) #returns 4 bytes
+        version = self.cmdMemRead(FLASH_CTRL_DIECFG2) #returns 4 bytes
+
         assert len(model) == 4, "Unreasonable chip model: %s" % repr(chip_id)
 
         chip_id_num = (ord(model[0]) << 8) | ord(model[1])
-        chip_flash_num = ((ord(model[3])&FLASH_SIZE_MASK)>>4)
-        chip_sram_num = ((((ord(model[2])<<8)|ord(model[3]))&SRAM_SIZE_MASK)>>7)
+        chip_flash_num = ((ord(model[3]) & FLASH_SIZE_MASK) >> 4)
+        chip_sram_num = ((((ord(model[2])<<8) | ord(model[3])) & SRAM_SIZE_MASK) >> 7)
         chip_id_str = CHIP_ID_STRS.get(chip_id_num, None)
         chip_flash_str = CHIP_FLASH_STRS.get(chip_flash_num, None)
         chip_sram_str = CHIP_SRAM_STRS.get(chip_sram_num, None)
 
+        chip_version_major = (ord(version[2]) & DIE_MAJOR_REVISION_MASK) >> 4
+        chip_version_minor = ord(version[2]) & DIE_MINOR_REVISION_MASK
+
         if chip_id_str is None:
             mdebug(0, 'Warning: unrecognized chip ID 0x%x' % chip_id_num)
         else:
-            mdebug(5, "    Target id: %s, flash: %s KB, SRAM: %s KB"\
-             % (chip_id_str, chip_flash_str, chip_sram_str))
+            mdebug(5, "    Target id: %s, flash: %s KB, SRAM: %s KB, Die Revision: %s.%s" \
+             % (chip_id_str, chip_flash_str, chip_sram_str, chip_version_major, chip_version_minor))
 
         self.flash_size = chip_flash_num
 
