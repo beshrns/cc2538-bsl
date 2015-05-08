@@ -101,7 +101,7 @@ class CmdException(Exception):
     pass
 
 class CommandInterface(object):
-    def open(self, aport='/dev/tty.usbserial-000013FAB', abaudrate=500000):
+    def open(self, aport='/dev/tty.usbserial-000013FAB', abaudrate=250000):
         self.sp = serial.Serial(
             port=aport,
             baudrate=abaudrate,     # baudrate
