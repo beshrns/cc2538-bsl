@@ -113,19 +113,20 @@ class CommandInterface(object):
             timeout=1               # set a timeout value, None for waiting forever
         )
 
-        # Use the DTR and RTS lines to control !RESET and the bootloader pin.
-        # This can automatically invoke the bootloader without the user
-        # having to toggle any pins.
-        # DTR: connected to the bootloader pin
-        # RTS: connected to !RESET
-        self.sp.setDTR(1)
-        self.sp.setRTS(0)
-        self.sp.setRTS(1)
-        self.sp.setRTS(0)
-        time.sleep(0.002)  # Make sure the pin is still asserted when the cc2538
-                           # comes out of reset. This fixes an issue where there
-                           # wasn't enough delay here on Mac.
-        self.sp.setDTR(0)
+        if(0):
+            # Use the DTR and RTS lines to control !RESET and the bootloader pin.
+            # This can automatically invoke the bootloader without the user
+            # having to toggle any pins.
+            # DTR: connected to the bootloader pin
+            # RTS: connected to !RESET
+            self.sp.setDTR(1)
+            self.sp.setRTS(0)
+            self.sp.setRTS(1)
+            self.sp.setRTS(0)
+            time.sleep(0.002)  # Make sure the pin is still asserted when the cc2538
+                               # comes out of reset. This fixes an issue where there
+                               # wasn't enough delay here on Mac.
+            self.sp.setDTR(0)
 
     def close(self):
         self.sp.close()
