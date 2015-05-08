@@ -449,14 +449,16 @@ class CommandInterface(object):
 
         # Boot loader enable check
         # TODO: implement check for all chip sizes & take into account partial firmware uploads
-        if (lng == 524288): #check if file is for 512K model
-            if not ((data[524247] & (1 << 4)) >> 4): #check the boot loader enable bit  (only for 512K model)
-                if not query_yes_no("The boot loader backdoor is not enabled "\
-                    "in the firmware you are about to write to the target. "\
-                    "You will NOT be able to reprogram the target using this tool if you continue! "\
-                    "Do you want to continue?","no"):
-                    raise Exception('Aborted by user.')
-
+        if (lng != 524288):  # check if file is for 512K model
+            raise Exception('Image file size is wrong: %d != 524288 bytes for the 512K chip model.' % (lng))
+        else:
+            mdebug(5, "Bootloader backdoor config byte is: 0x%x" % (data[524247]))
+            # 0xf2 == Logic LOW on Pin PA_2 (DIO4) activates the boot loader
+            if  (data[524247] != 0xf2):  # check the boot loader enable bit  (only for 512K model)
+                data[524247] = 0xf2 
+                mdebug(0, "WARNING: Bootloader backdoor is not enabled on source image! "\
+                "Forcing backdoor config byte to: 0x%x" % (data[524247]))
+        
         mdebug(5, "Writing %(lng)d bytes starting at address 0x%(addr)X" %
                { 'lng': lng, 'addr': addr})
 
