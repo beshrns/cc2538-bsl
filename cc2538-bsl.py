@@ -48,6 +48,7 @@ import os
 import subprocess
 import struct
 import binascii
+import traceback
 import numbers
 
 #version
@@ -766,4 +767,5 @@ if __name__ == "__main__":
         cmd.cmdReset()
 
     except Exception as err:
+        traceback.print_exc()
         exit('ERROR: %s' % str(err))
