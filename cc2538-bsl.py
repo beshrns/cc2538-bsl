@@ -54,8 +54,12 @@ import numbers
 # 0xFA == Logic HI on Pin PA_2 (DIO4) activates the boot loader
 # 111 1   1 010 ==> 111 (reserved) 1 (enable back door) 1 (logic hi) 010 (pin 2)
 BOOTLOADER_CONF_BYTE=0xfa
-# watning msg
+# warning msg
 BOOTLOADER_CONF_MSG="(PA2 - Hi)" 
+# For the new openmote-B, it shall use logic low on PA6 ==> 1111 0 110 == 0xf6
+#BOOTLOADER_CONF_BYTE=0xf6
+#BOOTLOADER_CONF_MSG="(PA6 - Lo)" 
+
 
 try:
     import magic
