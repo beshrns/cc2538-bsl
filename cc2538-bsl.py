@@ -55,10 +55,10 @@ import numbers
 # 111 1   1 010 ==> 111 (reserved) 1 (enable back door) 1 (logic hi) 010 (pin 2)
 BOOTLOADER_CONF_BYTE=0xfa
 # warning msg
-BOOTLOADER_CONF_MSG="(PA2 - Hi)" 
+BOOTLOADER_CONF_MSG="openmote (PA2 - Hi)" 
 # For the new openmote-B, it shall use logic low on PA6 ==> 1111 0 110 == 0xf6
-BOOTLOADER_CONF_BYTE=0xf6
-BOOTLOADER_CONF_MSG="(PA6 - Lo)" 
+# BOOTLOADER_CONF_BYTE=0xf6
+# BOOTLOADER_CONF_MSG="openmote-B (PA6 - Lo)" 
 
 
 try:
@@ -249,9 +249,7 @@ class CommandInterface(object):
 
         set_bootloader_pin(1 if not dtr_active_high else 0)
         set_reset_pin(0)
-        #time.sleep(0.1)
         set_reset_pin(1)
-        #time.sleep(0.1)
         set_reset_pin(0)
         time.sleep(0.002)  # Make sure the pin is still asserted when the chip
                            # comes out of reset. This fixes an issue where there
